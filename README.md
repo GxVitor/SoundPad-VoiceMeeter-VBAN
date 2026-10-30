@@ -45,3 +45,11 @@ gx-soundboard/
 ├── index.html               # Interface HTML limpa
 ├── main.js                  # Ponto de entrada do Electron (Janela e Comunicação IPC)
 └── package.json             # Dependências e scripts de Build
+```
+
+## 📥 Downloads e Releases
+
+| Versão | Descrição | Link de Download |
+| :--- | :--- | :---: |
+| **Instalador Windows** | Instalador automático (`.exe`) com atalhos no menu iniciar | [📦 Baixar Instalador](https://github.com/SEU-USUARIO/gx-soundboard-vban/releases/download/v1.0.0/GX.Soundboard.Setup.1.0.0.exe) |
+| **Versão Portátil** | Executável direto (`.exe` / `.zip`), roda sem precisar instalar | [📁 Baixar Portátil](https://github.com/SEU-USUARIO/gx-soundboard-vban/releases/download/v1.0.0/GX.Soundboard-Portable.zip) |
