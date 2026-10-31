@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>GX Soundboard - VBAN Edition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="src/styles/main.css">
+</head>
+<body class="text-slate-100 min-h-screen p-6 font-sans select-none relative" oncontextmenu="return false;">
+
+  <!-- Overlay de fundo escuro para transparência -->
+  <div class="fixed inset-0 bg-slate-950/80 -z-10"></div>
+
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row items-center justify-between bg-slate-900/80 backdrop-blur-md p-4 rounded-xl border border-slate-700/60 mb-6 gap-4 shadow-xl">
+    <div class="flex items-center gap-3">
+      <div class="p-3 bg-cyan-500/20 text-cyan-400 rounded-lg">
+        <i class="fa-solid fa-sliders text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-white tracking-wide">GX Soundboard</h1>
+        <p class="text-xs text-slate-400">Transmissão VBAN Multi-Stream Direct</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <button id="btnStopAudio" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-sm font-bold transition flex items-center gap-2 active:scale-95 shadow-md">
+        <i class="fa-solid fa-square text-xs"></i> Parar Áudio
+      </button>
+      <button id="btnRefresh" class="px-4 py-2 bg-slate-800/90 hover:bg-slate-700 border border-slate-700/80 rounded-lg text-sm transition flex items-center gap-2">
+        <i class="fa-solid fa-rotate"></i> Atualizar
+      </button>
+    </div>
+  </div>
+
+  <!-- Conexões VBAN -->
+  <div class="bg-slate-900/70 backdrop-blur-md border border-slate-700/60 p-5 rounded-xl mb-6 shadow-xl">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-sm font-semibold text-cyan-400 flex items-center gap-2">
+        <i class="fa-solid fa-network-wired"></i> Conexões VBAN Ativas
+      </h2>
+      <button id="btnAddConnection" class="p-1.5 px-3 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30 rounded-lg text-xs font-semibold transition active:scale-95 flex items-center gap-1.5">
+        <i class="fa-solid fa-plus text-xs"></i> Adicionar Conexão
+      </button>
+    </div>
+
+    <div id="gridConnections" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+  </div>
+
+  <!-- Seções de Áudio -->
+  <div class="space-y-6">
+    <!-- Favoritos -->
+    <div class="bg-slate-900/50 backdrop-blur-sm p-4 rounded-xl border border-slate-800/80">
+      <div class="flex items-center gap-2 mb-3">
+        <h3 class="text-sm font-medium text-amber-400 flex items-center gap-2">
+          <i class="fa-solid fa-star text-amber-400"></i> Favoritos
+        </h3>
+      </div>
+      <div id="gridAudiosFavorites" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
+    </div>
+
+    <!-- Áudios Locais -->
+    <div class="bg-slate-900/50 backdrop-blur-sm p-4 rounded-xl border border-slate-800/80">
+      <div class="flex items-center gap-2 mb-3">
+        <h3 class="text-sm font-medium text-slate-300 flex items-center gap-2">
+          <i class="fa-solid fa-folder text-cyan-400"></i> Áudios Locais
+        </h3>
+        <button id="btnAddAudio" title="Adicionar arquivo do PC" class="p-1.5 px-2.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30 rounded-lg text-xs font-semibold transition active:scale-95 flex items-center gap-1">
+          <i class="fa-solid fa-plus text-xs"></i>
+        </button>
+      </div>
+      <div id="gridAudiosLocal" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
+    </div>
+
+    <!-- Áudios Web -->
+    <div class="bg-slate-900/50 backdrop-blur-sm p-4 rounded-xl border border-slate-800/80">
+      <div class="flex items-center gap-2 mb-3">
+        <h3 class="text-sm font-medium text-slate-300 flex items-center gap-2">
+          <i class="fa-solid fa-globe text-emerald-400"></i> Áudios Web
+        </h3>
+        <button id="btnAddWebAudio" title="Adicionar via Link / MyInstants" class="p-1.5 px-2.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-semibold transition active:scale-95 flex items-center gap-1">
+          <i class="fa-solid fa-plus text-xs"></i>
+        </button>
+      </div>
+      <div id="gridAudiosWeb" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
+    </div>
+  </div>
+
+  <!-- Context Menu Customizado -->
+  <div id="contextMenu" class="hidden absolute z-50 bg-slate-800/95 backdrop-blur-md border border-slate-700 rounded-lg shadow-2xl p-1 w-52 text-sm">
+    <button id="menuOptionKeybind" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-700 hover:text-cyan-400 rounded transition flex items-center gap-2">
+      <i class="fa-solid fa-keyboard text-xs text-cyan-400"></i> Tecla de Atalho
+    </button>
+    <button id="menuOptionVolume" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-700 hover:text-cyan-400 rounded transition flex items-center gap-2">
+      <i class="fa-solid fa-volume-high text-xs text-cyan-400"></i> Ajustar Volume
+    </button>
+    <button id="menuOptionFavorite" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-700 hover:text-amber-400 rounded transition flex items-center gap-2">
+      <i class="fa-solid fa-star text-xs text-amber-400"></i> <span id="textMenuFavorite">Favoritar</span>
+    </button>
+    <button id="menuOptionRename" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-700 hover:text-cyan-400 rounded transition flex items-center gap-2">
+      <i class="fa-solid fa-pen text-xs text-cyan-400"></i> Renomear
+    </button>
+    <div class="border-t border-slate-700/60 my-1"></div>
+    <button id="menuOptionDelete" class="w-full text-left px-3 py-2 text-rose-400 hover:bg-rose-500/20 rounded transition flex items-center gap-2">
+      <i class="fa-solid fa-trash text-xs text-rose-400"></i> Excluir Áudio
+    </button>
+  </div>
+
+  <!-- Modal Tecla de Atalho (Keybind) -->
+  <div id="keybindModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900/90 border border-slate-700 p-5 rounded-xl max-w-sm w-full shadow-2xl space-y-4">
+      <h3 class="text-base font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-keyboard text-cyan-400"></i> Configurar Atalho Global
+      </h3>
+      
+      <div class="space-y-2">
+        <p class="text-xs text-slate-400">Pressione a combinação de teclas desejada no seu teclado:</p>
+        <div id="keybindBox" tabindex="0" class="w-full bg-slate-950 border border-cyan-500/50 rounded p-3 text-center text-sm font-mono text-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer">
+          Pressione a tecla...
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center pt-2">
+        <button id="modalKeybindClear" class="px-3 py-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 rounded-lg text-xs font-medium transition">Remover Atalho</button>
+        <div class="flex gap-2">
+          <button id="modalKeybindCancel" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-300 transition">Cancelar</button>
+          <button id="modalKeybindSave" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-xs font-medium text-white transition">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Ajuste de Volume -->
+  <div id="volumeModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900/90 border border-slate-700 p-5 rounded-xl max-w-sm w-full shadow-2xl space-y-4">
+      <h3 class="text-base font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-volume-high text-cyan-400"></i> Ajustar Volume do Áudio
+      </h3>
+      
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs text-slate-300 font-medium">
+          <span>Ganho de Saída:</span>
+          <span id="volumeValueLabel" class="text-cyan-400 font-bold">100%</span>
+        </div>
+        <input type="range" id="inputVolumeRange" min="0" max="200" step="5" value="100" class="w-full h-2 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-cyan-500">
+        <div class="flex justify-between text-[10px] text-slate-500">
+          <span>Mudo (0%)</span>
+          <span>Normal (100%)</span>
+          <span>Boost (200%)</span>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="modalVolumeCancel" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-300 transition">Cancelar</button>
+        <button id="modalVolumeSave" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-xs font-medium text-white transition">Salvar Volume</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Nova Conexão VBAN -->
+  <div id="connectionModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900/90 border border-slate-700 p-5 rounded-xl max-w-md w-full shadow-2xl space-y-4">
+      <h3 id="modalConnTitle" class="text-base font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-network-wired text-cyan-400"></i> Nova Conexão VBAN
+      </h3>
+      
+      <!-- ID Oculto para Edição -->
+      <input type="hidden" id="inputConnId">
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Nome de Identificação</label>
+          <input type="text" id="inputConnName" class="w-full bg-slate-950 border border-slate-700 rounded p-2.5 text-sm text-cyan-300 focus:outline-none focus:border-cyan-500" placeholder="Ex: PC Transmissão">
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div class="col-span-2">
+            <label class="block text-xs text-slate-400 mb-1">IP do VoiceMeeter</label>
+            <input type="text" id="inputConnIp" class="w-full bg-slate-950 border border-slate-700 rounded p-2.5 text-sm text-cyan-300 focus:outline-none focus:border-cyan-500" placeholder="192.168.15.3">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Porta UDP</label>
+            <input type="number" id="inputConnPort" value="6980" class="w-full bg-slate-950 border border-slate-700 rounded p-2.5 text-sm text-cyan-300 focus:outline-none focus:border-cyan-500">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Nome da Stream VBAN (VoiceMeeter)</label>
+          <input type="text" id="inputConnStream" value="Painel" class="w-full bg-slate-950 border border-slate-700 rounded p-2.5 text-sm text-cyan-300 focus:outline-none focus:border-cyan-500">
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="modalConnCancel" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-300 transition">Cancelar</button>
+        <button id="modalConnSave" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-xs font-medium text-white transition">Salvar Conexão</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Áudio Web -->
+  <div id="webAudioModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900/90 border border-slate-700 p-5 rounded-xl max-w-md w-full shadow-2xl space-y-4">
+      <h3 class="text-base font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-globe text-emerald-400"></i> Adicionar Áudio Web
+      </h3>
+      <p class="text-xs text-slate-400">Cole o link do MyInstants ou URL direta de áudio (.mp3):</p>
+      <input type="text" id="modalInputWebUrl" class="w-full bg-slate-950 border border-slate-700 rounded p-2.5 text-sm text-emerald-300 focus:outline-none focus:border-emerald-500" placeholder="https://www.myinstants.com/...">
+      
+      <div id="modalWebLoading" class="hidden text-xs text-amber-400 flex items-center gap-2">
+        <i class="fa-solid fa-spinner animate-spin"></i> Baixando e processando áudio...
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button id="modalWebBtnCancel" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-300 transition">Cancelar</button>
+        <button id="modalWebBtnSave" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs font-medium text-white transition">Adicionar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Renomear -->
+  <div id="renameModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900/90 border border-slate-700 p-5 rounded-xl max-w-sm w-full shadow-2xl space-y-4">
+      <h3 class="text-base font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-pen text-cyan-400"></i> Renomear Áudio
+      </h3>
+      <input type="text" id="modalInputName" class="w-full bg-slate-950 border border-slate-700 rounded p-2.5 text-sm text-cyan-300 focus:outline-none focus:border-cyan-500" placeholder="Digite o novo nome...">
+      <div class="flex justify-end gap-2">
+        <button id="modalBtnCancel" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-300 transition">Cancelar</button>
+        <button id="modalBtnSave" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-xs font-medium text-white transition">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Principal da Interface -->
+  <script>
+    const path = require('path');
+    require(path.join(__dirname, 'src', 'renderer', 'app.js'));
+  </script>
+</body>
+</html>
