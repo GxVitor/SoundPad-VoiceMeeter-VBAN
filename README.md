@@ -51,5 +51,5 @@ gx-soundboard/
 
 | Versão | Descrição | Link de Download |
 | :--- | :--- | :---: |
-| **Instalador Windows** | Instalador automático (`.exe`) com atalhos no menu iniciar | [📦 Baixar Instalador](https://github.com/SEU-USUARIO/gx-soundboard-vban/releases/download/v1.0.0/GX.Soundboard.Setup.1.0.0.exe) |
-| **Versão Portátil** | Executável direto (`.exe` / `.zip`), roda sem precisar instalar | [📁 Baixar Portátil](https://github.com/SEU-USUARIO/gx-soundboard-vban/releases/download/v1.0.0/GX.Soundboard-Portable.zip) |
+| **Instalador Windows** | Instalador automático (`.exe`) com atalhos no menu iniciar | [📦 Baixar Instalador](https://github.com/GxVitor/SoundPad-VoiceMeeter-VBAN/releases/download/v1.0.0/GX.Soundboard.Setup.1.0.0.exe) |
+| **Versão Portátil** | Executável direto (`.exe` / `.zip`), roda sem precisar instalar | [📁 Baixar Portátil](https://github.com/GxVitor/SoundPad-VoiceMeeter-VBAN/releases/download/v1.0.0/GX.Soundboard.1.0.0.exe) |
