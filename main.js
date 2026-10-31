@@ -13,6 +13,15 @@ const vbanEngine = require('./src/vban/vbanEngine');
 
 let mainWindow;
 
+// Define o diretório de áudios correto para DEV e para o EXE instalado (userData)
+const audiosDir = app.isPackaged 
+  ? path.join(app.getPath('userData'), 'audios')
+  : path.join(__dirname, 'audios');
+
+if (!fs.existsSync(audiosDir)) {
+  fs.mkdirSync(audiosDir, { recursive: true });
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1050,
@@ -47,7 +56,6 @@ function registerAllGlobalShortcuts() {
     try {
       const registered = globalShortcut.register(shortcut, () => {
         console.log(`⚡ Atalho disparado no SO: [${shortcut}] -> Arquivo: ${fileName}`);
-        const audiosDir = path.join(__dirname, 'audios');
         const audioPath = path.join(audiosDir, fileName);
 
         if (fs.existsSync(audioPath)) {
@@ -66,12 +74,6 @@ function registerAllGlobalShortcuts() {
 
 app.whenReady().then(() => {
   createWindow();
-
-  const audiosDir = path.join(__dirname, 'audios');
-  if (!fs.existsSync(audiosDir)) {
-    fs.mkdirSync(audiosDir, { recursive: true });
-  }
-
   registerAllGlobalShortcuts();
 });
 
@@ -110,6 +112,11 @@ ipcMain.handle('add-connection', async (event, newConn) => {
   return connectionConfig.addConnection(newConn);
 });
 
+ipcMain.handle('update-connection', async (event, updatedConn) => {
+  vbanEngine.removeActiveConnection(updatedConn.id);
+  return connectionConfig.updateConnection(updatedConn);
+});
+
 ipcMain.handle('delete-connection', async (event, connId) => {
   vbanEngine.removeActiveConnection(connId);
   connectionConfig.deleteConnectionConfig(connId);
@@ -137,7 +144,6 @@ ipcMain.handle('rename-audio', async (event, { fileName, newCustomName }) => {
 
 ipcMain.handle('delete-audio', async (event, fileName) => {
   try {
-    const audiosDir = path.join(__dirname, 'audios');
     const filePath = path.join(audiosDir, fileName);
 
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
@@ -209,9 +215,6 @@ ipcMain.handle('download-web-audio', async (event, inputUrl) => {
     }
 
     const fileName = `web_${Date.now()}.mp3`;
-    const audiosDir = path.join(__dirname, 'audios');
-    if (!fs.existsSync(audiosDir)) fs.mkdirSync(audiosDir, { recursive: true });
-
     const destPath = path.join(audiosDir, fileName);
     await downloadFile(directAudioUrl, destPath);
 
@@ -232,23 +235,16 @@ ipcMain.handle('select-audios', async () => {
 
   if (result.canceled || result.filePaths.length === 0) return false;
 
-  const audiosDir = app.isPackaged 
-  ? path.join(app.getPath('userData'), 'audios')
-  : path.join(__dirname, 'audios');
-
-  if (!fs.existsSync(audiosDir)) {
-    fs.mkdirSync(audiosDir, { recursive: true });
-  }
-
   for (const filePath of result.filePaths) {
     const fileName = path.basename(filePath);
-    fs.copyFileSync(filePath, path.join(audiosDir, fileName));
+    const destPath = path.join(audiosDir, fileName);
+    fs.copyFileSync(filePath, destPath);
   }
   return true;
 });
 
+// Listar áudios na interface (Único handler registrado)
 ipcMain.handle('get-audios', async () => {
-  const audiosDir = path.join(__dirname, 'audios');
   if (!fs.existsSync(audiosDir)) return [];
 
   const files = fs.readdirSync(audiosDir);
@@ -269,12 +265,6 @@ ipcMain.handle('get-audios', async () => {
     isPlaying: isPlayingAudio && currentPlayingFile === file,
     path: path.join(audiosDir, file)
   }));
-});
-
-ipcMain.handle('update-connection', async (event, updatedConn) => {
-  // Se a conexão estiver ativa no momento da edição, desconecta para aplicar os novos parâmetros
-  vbanEngine.removeActiveConnection(updatedConn.id);
-  return connectionConfig.updateConnection(updatedConn);
 });
 
 app.on('will-quit', () => {
